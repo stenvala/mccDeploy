@@ -17,11 +17,9 @@ class deploy implements deployI {
     $this->vars['displayCommand'] = true;
     $this->vars['sleep'] = 300; // in mu-s sleep always after run command, causes less instability
     $this->vars['preventCreateOnNonEmpty'] = true;
+    $this->vars['display'] = true;
   }
-
-  // new release
-  // return finalizing function which changes the symlinks and can be run after everything is done, to minimize the downtime
-  // sets variable {{newRelease}} which can be used in other functions
+  
   public function build() {
     $time = date('YmdHis');
     $this->run("mkdir {{path}}/releases/$time");
@@ -30,14 +28,14 @@ class deploy implements deployI {
     $this->varreg('newRelease', "releases/$time");
 
     $finalize = function() use ($time) {
+      $this->removeOldReleases();
       $this->run('rm {{path}}/release');
       $this->run("ln -s {{path}}/releases/$time {{path}}/release");
     };
     foreach ($this->extRepos as $repo) {
       $this->mkdir($repo['dir']);
       $this->cloneGitRepo($repo['remote'], $repo['dir']);
-    }
-    $this->removeOldReleases();
+    }    
     return $finalize;
   }
 
@@ -67,7 +65,9 @@ class deploy implements deployI {
         $this->deploy($newtask);
       }
     } else {
-      print colors::color("-- Executing task: $task --", "blue", "white") . "\n";
+      if ($this->vars['display']){
+        print colors::color("-- Executing task: $task --", "blue", "white") . "\n";
+      }
       $t();
     }
   }
@@ -75,8 +75,7 @@ class deploy implements deployI {
   public function error($str) {
     die(colors::color("ERROR: $str EXITING.", "red", "yellow") . "\n");
   }
-
-  // short-cuts to command line commands
+  
   public function bower($command = 'install', $path = 'release') {
     $this->run("cd {{path}}/$path; {{bower}} $command");
   }
@@ -144,13 +143,11 @@ class deploy implements deployI {
       $this->run('rm -rf ' . $files[$i]);
     }
   }
-
-  // register variables and deployfunctions
+  
   public function repo($dir, $remote) {
     array_push($this->extRepos, array('dir' => $dir, 'remote' => $remote));
   }
-
-  // run all shell commands through, includes automatic variable substitution
+  
   public function run($command) {
     $command = $this->substituteVars($command);
     if ($this->vars['displayCommand']) {
@@ -186,8 +183,7 @@ class deploy implements deployI {
   public function task($name, $function) {
     $this->tasks[$name] = $function;
   }
-
-  // register variable that can be used as {{VARIABLE_NAME}}
+  
   public function varreg($name, $value) {
     $this->vars[$name] = $value;
   }
