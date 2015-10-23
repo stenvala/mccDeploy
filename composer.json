@@ -1,0 +1,20 @@
+{
+  "name": "mathCodingClub/mccDeploy",
+  "version": "1.0",
+  "authors": {
+    "name": "Antti Stenvall",
+    "email": "antti@stenvall.fi",
+    "homepage": "http://antti.stenvall.fi",
+    "role": "Developer"
+  },
+  "dist": {
+    "url": "https://github.com/mathCodingClub/mccDeploy/archive/master.zip",
+    "type": "zip"
+  },
+  "autoload": {
+    "psr-4": {
+      "mcc\\deploy\\": "src/"
+    }
+  },
+  "minimum-stability": "dev"
+}
