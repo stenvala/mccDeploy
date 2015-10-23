@@ -115,7 +115,7 @@ class deploy implements deployI {
     $dir = '{{path}}';
     foreach ($var as $d) {
       $dir .= '/' . $d;
-      if (!file_exists($this->substituteVars($dir))) { // could be as well symlink and not file
+      if (!file_exists($this->substituteVars($dir))) {
         $this->run("mkdir $dir; chmod $chmod $dir");
       }
     }
